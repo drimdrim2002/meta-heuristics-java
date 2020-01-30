@@ -30,7 +30,6 @@ public class PlannerMain {
         logger.info("initial score ==" + scoreCalculator.calculateScore());
 
 
-        CloudBalance cloudBalance = scoreCalculator.getCloudBalance();
 
         // 초기해를 구한다.
         for (CloudProcess cloudProcess : cloudBalance.getProcessList()) {
