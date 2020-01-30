@@ -8,9 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import score.ScoreCalculator;
 import score.ScoreLong;
-import solver.LahcSolver;
 
-import java.util.Map;
 import java.util.TreeMap;
 
 public class PlannerMain {
