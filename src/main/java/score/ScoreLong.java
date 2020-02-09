@@ -20,6 +20,12 @@ public class ScoreLong implements Comparable<ScoreLong>, Comparator<ScoreLong> {
         scoreOrder[1] = softScore;
     }
 
+    public void assign(ScoreLong _scoreLong) {
+        this.scoreOrder = new long[2];
+        scoreOrder[0] = _scoreLong.getHardScore();
+        scoreOrder[1] = _scoreLong.getSoftScore();
+    }
+
 
     @Override
     public String toString() {

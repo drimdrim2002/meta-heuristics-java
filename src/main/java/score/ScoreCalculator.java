@@ -6,6 +6,7 @@ import domain.CloudProcess;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class ScoreCalculator {
     private Map<CloudComputer, Integer> cpuPowerUsageMap;
@@ -46,6 +47,35 @@ public class ScoreCalculator {
             insert(process);
         }
     }
+
+
+    public void initialPlan() {
+
+        // 초기해를 구한다.
+        for (CloudProcess cloudProcess : cloudBalance.getProcessList()) {
+
+            TreeMap<ScoreLong, CloudComputer> scoreRank = new TreeMap<ScoreLong, CloudComputer>();
+            for (CloudComputer cloudComputer : cloudBalance.getComputerList()) {
+                cloudProcess.setComputer(cloudComputer);
+                afterVariableChanged(cloudProcess);
+                ScoreLong afterScore = calculateScore();
+                beforeVariableChanged(cloudProcess);
+
+                if (afterScore.getHardScore() >= 0) {
+                    scoreRank.put(afterScore, cloudComputer);
+                }
+                cloudProcess.setComputer(null);
+            }
+
+            if (!scoreRank.isEmpty()) {
+                CloudComputer cloudComputer = scoreRank.lastEntry().getValue();
+                cloudProcess.setComputer(cloudComputer);
+                afterVariableChanged(cloudProcess);
+            }
+        }
+
+    }
+
 
     private void insert(CloudProcess process) {
 
@@ -130,15 +160,6 @@ public class ScoreCalculator {
 
     public void afterVariableChanged(CloudProcess cloudProcess) {
         insert(cloudProcess);
-    }
-
-    public void beforeEntityRemoved(Object entity) {
-        retract((CloudProcess) entity);
-    }
-
-    public void afterEntityRemoved(Object entity) {
-        // Do nothing
-        // TODO the maps should probably be adjusted
     }
 
 

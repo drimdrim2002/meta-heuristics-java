@@ -26,7 +26,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import score.ScoreCalculator;
 
-public class CloudProcessSwapMove {
+public class CloudProcessSwapMove extends AbstractMove {
 
     private CloudProcess leftCloudProcess;
     private CloudProcess rightCloudProcess;
@@ -40,11 +40,18 @@ public class CloudProcessSwapMove {
         return !Objects.equals(leftCloudProcess.getComputer(), rightCloudProcess.getComputer());
     }
 
-    public CloudProcessSwapMove createUndoMove(ScoreCalculator scoreDirector) {
-        return new CloudProcessSwapMove(rightCloudProcess, leftCloudProcess);
+    public void undoMove(ScoreCalculator scoreDirector) {
+        CloudComputer oldRightCloudComputer = leftCloudProcess.getComputer();
+        CloudComputer oldLeftCloudComputer = rightCloudProcess.getComputer();
+        scoreDirector.beforeVariableChanged(leftCloudProcess);
+        leftCloudProcess.setComputer(oldLeftCloudComputer);
+        scoreDirector.afterVariableChanged(leftCloudProcess);
+        scoreDirector.beforeVariableChanged(rightCloudProcess);
+        rightCloudProcess.setComputer(oldRightCloudComputer);
+        scoreDirector.afterVariableChanged(rightCloudProcess);
     }
 
-    protected void doMoveOnGenuineVariables(ScoreCalculator scoreDirector) {
+    public void doMove(ScoreCalculator scoreDirector) {
         CloudComputer oldLeftCloudComputer = leftCloudProcess.getComputer();
         CloudComputer oldRightCloudComputer = rightCloudProcess.getComputer();
         scoreDirector.beforeVariableChanged(leftCloudProcess);
@@ -56,17 +63,6 @@ public class CloudProcessSwapMove {
     }
 
 
-    public String getSimpleMoveTypeDescription() {
-        return getClass().getSimpleName() + "(" + CloudProcess.class.getSimpleName() + ".computer)";
-    }
-
-    public Collection<? extends Object> getPlanningEntities() {
-        return Arrays.asList(leftCloudProcess, rightCloudProcess);
-    }
-
-    public Collection<? extends Object> getPlanningValues() {
-        return Arrays.asList(leftCloudProcess.getComputer(), rightCloudProcess.getComputer());
-    }
 
     public boolean equals(Object o) {
         if (this == o) {
@@ -92,8 +88,8 @@ public class CloudProcessSwapMove {
 
     @Override
     public String toString() {
-        return leftCloudProcess + " {" + leftCloudProcess.getComputer() +  "} <-> "
-                + rightCloudProcess + " {" + rightCloudProcess.getComputer() + "}";
+        return "Swap!! " +leftCloudProcess.getId()+ " {" + leftCloudProcess.getComputer().getId() +  "} <-> "
+                + rightCloudProcess.getId() + " {" + rightCloudProcess.getComputer().getId() + "}";
     }
 
 }

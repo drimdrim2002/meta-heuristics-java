@@ -28,42 +28,36 @@ import java.util.Collections;
 import java.util.Objects;
 
 
-public class CloudComputerChangeMove  {
+public class CloudComputerChangeMove  extends AbstractMove {
 
     private CloudProcess cloudProcess;
+    private CloudComputer fromCloudComputer;
     private CloudComputer toCloudComputer;
 
-    public CloudComputerChangeMove(CloudProcess cloudProcess, CloudComputer toCloudComputer) {
+    public CloudComputerChangeMove(CloudProcess cloudProcess,CloudComputer fromCloudComputer, CloudComputer toCloudComputer) {
         this.cloudProcess = cloudProcess;
+        this.fromCloudComputer = fromCloudComputer;
         this.toCloudComputer = toCloudComputer;
     }
 
     public boolean isMoveDoable(ScoreCalculator scoreCalculator) {
-        return !Objects.equals(cloudProcess.getComputer(), toCloudComputer);
+        return !Objects.equals(fromCloudComputer, toCloudComputer);
     }
 
-    public CloudComputerChangeMove createUndoMove(ScoreCalculator scoreCalculator) {
-        return new CloudComputerChangeMove(cloudProcess, cloudProcess.getComputer());
+    public void undoMove(ScoreCalculator scoreCalculator) {
+        scoreCalculator.beforeVariableChanged(cloudProcess);
+        cloudProcess.setComputer(fromCloudComputer);
+        scoreCalculator.afterVariableChanged(cloudProcess);
     }
 
-    protected void doMoveOnGenuineVariables(ScoreCalculator scoreCalculator) {
+
+    public void doMove(ScoreCalculator scoreCalculator) {
         scoreCalculator.beforeVariableChanged(cloudProcess);
         cloudProcess.setComputer(toCloudComputer);
         scoreCalculator.afterVariableChanged(cloudProcess);
     }
 
 
-    public String getSimpleMoveTypeDescription() {
-        return getClass().getSimpleName() + "(" + CloudProcess.class.getSimpleName() + ".computer)";
-    }
-
-    public Collection<? extends Object> getPlanningEntities() {
-        return Collections.singletonList(cloudProcess);
-    }
-
-    public Collection<? extends Object> getPlanningValues() {
-        return Collections.singletonList(toCloudComputer);
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -90,7 +84,7 @@ public class CloudComputerChangeMove  {
 
     @Override
     public String toString() {
-        return cloudProcess + " {" + cloudProcess.getComputer() + " -> " + toCloudComputer + "}";
+        return "Change !! " + cloudProcess.getId() + " {" + cloudProcess.getComputer().getId() + " -> " + toCloudComputer.getId() + "}";
     }
 
 }

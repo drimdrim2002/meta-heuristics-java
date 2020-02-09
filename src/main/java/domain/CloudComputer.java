@@ -64,4 +64,8 @@ public class CloudComputer implements Serializable {
     public void setCost(int cost) {
         this.cost = cost;
     }
+
+    public int getId() {
+        return this.id;
+    }
 }

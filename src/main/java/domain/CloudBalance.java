@@ -1,18 +1,26 @@
 package domain;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import score.ScoreCalculator;
 import score.ScoreLong;
+import solver.LahcSolver;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CloudBalance implements Serializable {
 
-    //나중에 멀티쓰레드에서 필요
-    private int id ;
     private List<CloudComputer> computerList;
     private List<CloudProcess> processList;
     private ScoreCalculator scoreCalculator;
+    private final static Logger logger = LoggerFactory.getLogger(CloudBalance.class);
+
+
+    //멀티쓰레드 적용을 위해 설정
+    private int id;
 
     public void setScore(ScoreLong score) {
         this.score = score;
@@ -35,7 +43,7 @@ public class CloudBalance implements Serializable {
     }
 
     public CloudBalance(int id, List<CloudComputer> computerList, List<CloudProcess> processList) {
-        this.id =id;
+        this.id = id;
         this.computerList = computerList;
         this.processList = processList;
     }
@@ -56,6 +64,15 @@ public class CloudBalance implements Serializable {
 
     public void setProcessList(List<CloudProcess> processList) {
         this.processList = processList;
+    }
+
+
+    public void showPlans() {
+        logger.info("show Plans");
+        for (CloudProcess process : processList) {
+            logger.info("   Process " + process.getId()  + "==> " + process.getComputer().getId());
+
+        }
     }
 
 }
