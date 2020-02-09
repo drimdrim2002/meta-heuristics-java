@@ -1,12 +1,9 @@
 package solver;
 
 import common.EngineConfig;
-import common.RandomList;
-import domain.CloudBalance;
 import domain.CloudComputer;
 import domain.CloudProcess;
 import move.AbstractMove;
-import move.CloudComputerChangeMove;
 import move.MoveGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,16 +68,30 @@ public class LahcSolver extends Solver {
         do {
 
             // next Move의 score를 가져오기
-            AbstractMove move = MoveGenerator.getNextMove(scoreCalculator, random);
+            List<AbstractMove> moveList = MoveGenerator.getNextMove(scoreCalculator, random);
 
-            logger.info(move.toString());
+            //before move
 
-            move.doMove(scoreCalculator);
+            logger.info("Before Moves");
+            scoreCalculator.getCloudBalance().showPlans();
+
+
+            for (AbstractMove move : moveList) {
+                logger.info(move.toString());
+                move.doMove(scoreCalculator);
+            }
+            logger.info("After Moves");
             scoreCalculator.getCloudBalance().showPlans();
 
 
             ScoreLong nextScore = scoreCalculator.calculateScore();
-            move.undoMove(scoreCalculator);
+
+            for (AbstractMove move : moveList) {
+                move.undoMove(scoreCalculator);
+            }
+            logger.info("Rollback Moves");
+            scoreCalculator.getCloudBalance().showPlans();
+
             scoreCalculator.getCloudBalance().showPlans();
             ScoreLong prevSetpScore = scoreArray[nstep % scoreArraySize] ;
 
@@ -91,9 +102,12 @@ public class LahcSolver extends Solver {
 
             if (accept && currScore.compareTo(prevSetpScore) >= 0) {
                 prevSetpScore.assign(currScore);
-                move.doMove(scoreCalculator);
 
                 //accept하여 move를 받아들임
+                for (AbstractMove move : moveList) {
+                    logger.info(move.toString());
+                    move.doMove(scoreCalculator);
+                }
             }
 
 
@@ -121,9 +135,9 @@ public class LahcSolver extends Solver {
                 }
             }
 
-//            if ((calEndTime - bestScoreTime) / 1000 >= maxPermitIdleTime) {
-//                break;
-//            }
+            if ((calEndTime - bestScoreTime) / 1000 >= maxPermitIdleTime) {
+                break;
+            }
 
         } while (true);
 

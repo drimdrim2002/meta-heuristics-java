@@ -6,13 +6,16 @@ import domain.CloudComputer;
 import domain.CloudProcess;
 import score.ScoreCalculator;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class MoveGenerator {
 
 
-    public static AbstractMove getNextMove(ScoreCalculator scoreCalculator, Random random) {
+    public static List<AbstractMove> getNextMove(ScoreCalculator scoreCalculator, Random random) {
+
+        List<AbstractMove> moveList = new ArrayList<AbstractMove>();
 
         CloudBalance cloudBalance = scoreCalculator.getCloudBalance();
         List<CloudProcess> cloudProcessList = cloudBalance.getProcessList();
@@ -20,58 +23,57 @@ public class MoveGenerator {
         //TODO : MOVE 선택하기
         int randomIndex = new Random().nextInt(2);
 
-        RandomList<CloudProcess> randomProcessList = new RandomList<CloudProcess>(cloudProcessList);
-
-
         // change move
         if (randomIndex == 0) {
-            CloudProcess randomProcess = randomProcessList.randomPick(random);
 
-            // from, to computer 선택
-            CloudComputer fromCloudComputer = randomProcess.getComputer();
-            CloudComputer toCloudComputer = null;
+            RandomList<CloudComputer> computerRandomList = new RandomList<CloudComputer>(cloudComputerList);
 
-
-
-
-            //random하게 computer 선택
-            RandomList<CloudComputer> cloudComputerRandomList = new RandomList<>(cloudComputerList);
+            List<CloudProcess> toRemoveProcessList = new ArrayList<>();
             do {
-
-                CloudComputer randomComputer= cloudComputerRandomList.randomPick(random);
-                if ( fromCloudComputer!= null && randomComputer.equals(fromCloudComputer)){
-                    cloudComputerRandomList.remove(randomComputer);
-                } else {
-                    toCloudComputer = randomComputer;
-//                    randomProcess.setComputer(randomComputer);
+                CloudComputer toRemoveComputer = computerRandomList.randomPick(random);
+                for (CloudProcess process : cloudProcessList) {
+                    if (process.getComputer().equals(toRemoveComputer)) {
+                        toRemoveProcessList.add(process);
+                    }
+                }
+                computerRandomList.remove(toRemoveComputer);
+                if (toRemoveProcessList.size() >= 1) {
                     break;
                 }
 
-            }while(!cloudComputerRandomList.isEmpty());
+            } while (!computerRandomList.isEmpty());
 
-            CloudComputerChangeMove changeMove = new CloudComputerChangeMove(randomProcess, fromCloudComputer, toCloudComputer);
-            return changeMove;
-            //원복하기
+            RandomList <CloudProcess> randomProcessList = new RandomList<>(toRemoveProcessList);
+
+            do {
+                CloudProcess toMoveprocess = randomProcessList.randomPick(random);
+                CloudComputer toMoveComputer = computerRandomList.randomPick(random);
+
+                CloudComputerChangeMove changeMove = new CloudComputerChangeMove(toMoveprocess, toMoveprocess.getComputer(), toMoveComputer);
+                moveList.add(changeMove);
+
+                randomProcessList.remove(toMoveprocess);
+            } while (!randomProcessList.isEmpty());
+
 
         } else {
 
-            CloudProcess leftProcess = null;
-            CloudProcess rightProcess = null;
+
+            RandomList<CloudProcess> randomProcessList = new RandomList<>(cloudProcessList);
 
             do {
-                leftProcess = randomProcessList.randomPick(random);
+                CloudProcess leftProcess = randomProcessList.randomPick(random);
                 randomProcessList.remove(leftProcess);
 
-                rightProcess = randomProcessList.randomPick(random);
+                CloudProcess rightProcess = randomProcessList.randomPick(random);
                 randomProcessList.remove(rightProcess);
 
-                break;
-            } while(!randomProcessList.isEmpty());
-
-            CloudProcessSwapMove swapMove = new CloudProcessSwapMove(leftProcess, rightProcess);
-            return swapMove;
-
+                CloudProcessSwapMove swapMove = new CloudProcessSwapMove(leftProcess, rightProcess);
+                moveList.add(swapMove);
+            } while (randomProcessList.size() >= 2);
         }
+
+        return moveList;
     }
 
 }
