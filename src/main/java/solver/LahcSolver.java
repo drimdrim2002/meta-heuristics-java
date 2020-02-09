@@ -99,6 +99,9 @@ public class LahcSolver extends Solver {
             // 다음 move가 현재보다 좋거나, 이전 setp보다 좋으면 accept
             accept = (nextScore.compareTo(currScore) >= 0 || nextScore.compareTo(prevSetpScore) >= 0);
 
+            if(accept) {
+                currScore.assign(nextScore);
+            }
 
             if (accept && currScore.compareTo(prevSetpScore) >= 0) {
                 prevSetpScore.assign(currScore);
@@ -113,6 +116,7 @@ public class LahcSolver extends Solver {
 
             long calEndTime = System.currentTimeMillis();
             int calPeriod = (int) (calEndTime - calstartTime) / 1000;
+
 
 
             if (currScore.compareTo(bestScore) > 0) {
@@ -135,9 +139,9 @@ public class LahcSolver extends Solver {
                 }
             }
 
-            if ((calEndTime - bestScoreTime) / 1000 >= maxPermitIdleTime) {
-                break;
-            }
+//            if ((calEndTime - bestScoreTime) / 1000 >= maxPermitIdleTime) {
+//                break;
+//            }
 
         } while (true);
 
