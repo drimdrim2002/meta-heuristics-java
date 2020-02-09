@@ -46,7 +46,7 @@ public class LahcSolver extends Solver {
         ScoreLong bestScore = new ScoreLong(currScore);
 
         // 초기 해를 best score 로 저장
-        for (int i = 1; i <= scoreArraySize; i++) {
+        for (int i = 0; i <= scoreArraySize; i++) {
             scoreArray[i] = new ScoreLong(currScore);
         }
 
@@ -72,16 +72,16 @@ public class LahcSolver extends Solver {
 
             //before move
 
-            logger.info("Before Moves");
-            scoreCalculator.getCloudBalance().showPlans();
+//            logger.info("Before Moves");
+//            scoreCalculator.getCloudBalance().showPlans();
 
 
             for (AbstractMove move : moveList) {
-                logger.info(move.toString());
+//                logger.info(move.toString());
                 move.doMove(scoreCalculator);
             }
-            logger.info("After Moves");
-            scoreCalculator.getCloudBalance().showPlans();
+//            logger.info("After Moves");
+//            scoreCalculator.getCloudBalance().showPlans();
 
 
             ScoreLong nextScore = scoreCalculator.calculateScore();
@@ -89,10 +89,11 @@ public class LahcSolver extends Solver {
             for (AbstractMove move : moveList) {
                 move.undoMove(scoreCalculator);
             }
-            logger.info("Rollback Moves");
-            scoreCalculator.getCloudBalance().showPlans();
+//            logger.info("Rollback Moves");
+//            scoreCalculator.getCloudBalance().showPlans();
 
-            scoreCalculator.getCloudBalance().showPlans();
+
+//            scoreCalculator.getCloudBalance().showPlans();
             ScoreLong prevSetpScore = scoreArray[nstep % scoreArraySize] ;
 
 
@@ -108,7 +109,7 @@ public class LahcSolver extends Solver {
 
                 //accept하여 move를 받아들임
                 for (AbstractMove move : moveList) {
-                    logger.info(move.toString());
+//                    logger.info(move.toString());
                     move.doMove(scoreCalculator);
                 }
             }
@@ -127,13 +128,17 @@ public class LahcSolver extends Solver {
                 for (CloudProcess cloudProcess : scoreCalculator.getCloudBalance().getProcessList()) {
                     backupBestScoreAnswer.put(cloudProcess, cloudProcess.getComputer());
                 }
-                logger.info("score recorded!!" + scoreCalculator.calculateScore());
+//                logger.info("score recorded!!" + scoreCalculator.calculateScore());
                 bestScoreTime = calEndTime;
+            }
+
+            if(calPeriod != displayTerm && calPeriod % 1 == 0){
+                displayTerm = calPeriod;
+                logger.info(String.format("%11d", nstep) + " best : " + bestScore.toString() + " time " + calPeriod );
             }
 
             if (calPeriod != maxTime && calPeriod % 10 == 0) {
                 maxTime = calPeriod;
-
                 if (maxTime >= maxRunningTime) {
                     break;
                 }
@@ -143,6 +148,7 @@ public class LahcSolver extends Solver {
 //                break;
 //            }
 
+            nstep++;
         } while (true);
 
 

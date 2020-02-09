@@ -45,32 +45,47 @@ public class MoveGenerator {
 
             RandomList <CloudProcess> randomProcessList = new RandomList<>(toRemoveProcessList);
 
+            int moveSize = new Random().nextInt(randomProcessList.size());
+            CloudComputer toMoveComputer = computerRandomList.randomPick(random);
             do {
                 CloudProcess toMoveprocess = randomProcessList.randomPick(random);
-                CloudComputer toMoveComputer = computerRandomList.randomPick(random);
+
 
                 CloudComputerChangeMove changeMove = new CloudComputerChangeMove(toMoveprocess, toMoveprocess.getComputer(), toMoveComputer);
                 moveList.add(changeMove);
 
                 randomProcessList.remove(toMoveprocess);
-            } while (!randomProcessList.isEmpty());
+                moveSize--;
+                break;
+            } while ( moveSize >=0);
 
 
         } else {
 
 
             RandomList<CloudProcess> randomProcessList = new RandomList<>(cloudProcessList);
-
+//            int moveSize = new Random().nextInt(randomProcessList.size());
             do {
                 CloudProcess leftProcess = randomProcessList.randomPick(random);
-                randomProcessList.remove(leftProcess);
-
+//                moveSize --;
                 CloudProcess rightProcess = randomProcessList.randomPick(random);
-                randomProcessList.remove(rightProcess);
+//                moveSize --;
+
+                if (leftProcess.equals(rightProcess)){
+                    continue;
+                }
+
+                if (leftProcess.getComputer() != null && rightProcess.getComputer() != null){
+                    if (leftProcess.getComputer().equals(rightProcess.getComputer())) {
+                        continue;
+                    }
+                }
 
                 CloudProcessSwapMove swapMove = new CloudProcessSwapMove(leftProcess, rightProcess);
                 moveList.add(swapMove);
-            } while (randomProcessList.size() >= 2);
+
+                break;
+            } while (!randomProcessList.isEmpty());
         }
 
         return moveList;
