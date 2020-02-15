@@ -20,7 +20,7 @@ public class LahcSolver extends Solver {
 
     private final static Logger logger = LoggerFactory.getLogger(LahcSolver.class);
     private final ScoreCalculator scoreCalculator;
-    private final int scoreArraySize;
+    private int scoreArraySize;
     private final ScoreLong[] scoreArray;
     private final int foragarSize;
     private final int maxRunningTime;
@@ -55,8 +55,8 @@ public class LahcSolver extends Solver {
         boolean accept;
 
         long calstartTime = System.currentTimeMillis();
-        int maxTime = 0;
-        int displayTerm = 0;
+        int elapsedTime = 0;
+        int displayedTime = 0;
         long bestScoreTime = calstartTime;
 
 
@@ -70,18 +70,10 @@ public class LahcSolver extends Solver {
             // next Move의 score를 가져오기
             List<AbstractMove> moveList = MoveGenerator.getNextMove(scoreCalculator, random);
 
-            //before move
-
-//            logger.info("Before Moves");
-//            scoreCalculator.getCloudBalance().showPlans();
-
 
             for (AbstractMove move : moveList) {
-//                logger.info(move.toString());
                 move.doMove(scoreCalculator);
             }
-//            logger.info("After Moves");
-//            scoreCalculator.getCloudBalance().showPlans();
 
 
             ScoreLong nextScore = scoreCalculator.calculateScore();
@@ -89,11 +81,8 @@ public class LahcSolver extends Solver {
             for (AbstractMove move : moveList) {
                 move.undoMove(scoreCalculator);
             }
-//            logger.info("Rollback Moves");
-//            scoreCalculator.getCloudBalance().showPlans();
 
 
-//            scoreCalculator.getCloudBalance().showPlans();
             ScoreLong prevSetpScore = scoreArray[nstep % scoreArraySize] ;
 
 
@@ -102,52 +91,60 @@ public class LahcSolver extends Solver {
 
             if(accept) {
                 currScore.assign(nextScore);
+                //accept하여 move를 받아들임
+                for (AbstractMove move : moveList) {
+                    move.doMove(scoreCalculator);
+                }
+
             }
 
             if (accept && currScore.compareTo(prevSetpScore) >= 0) {
                 prevSetpScore.assign(currScore);
 
-                //accept하여 move를 받아들임
-                for (AbstractMove move : moveList) {
-//                    logger.info(move.toString());
-                    move.doMove(scoreCalculator);
-                }
+
             }
 
 
             long calEndTime = System.currentTimeMillis();
-            int calPeriod = (int) (calEndTime - calstartTime) / 1000;
+            int currentTime = (int) (calEndTime - calstartTime) / 1000;
 
 
 
             if (currScore.compareTo(bestScore) > 0) {
                 bestScore.assign(currScore);
 
-
                 //domove는 이미 되어있다고 본다.
                 for (CloudProcess cloudProcess : scoreCalculator.getCloudBalance().getProcessList()) {
                     backupBestScoreAnswer.put(cloudProcess, cloudProcess.getComputer());
                 }
-//                logger.info("score recorded!!" + scoreCalculator.calculateScore());
                 bestScoreTime = calEndTime;
             }
 
-            if(calPeriod != displayTerm && calPeriod % 1 == 0){
-                displayTerm = calPeriod;
-                logger.info(String.format("%11d", nstep) + " best : " + bestScore.toString() + " time " + calPeriod );
+            //1초에 한번씩 display
+            if(currentTime != displayedTime && currentTime % 1 == 0){
+                displayedTime = currentTime;
+                logger.info(String.format("%11d", nstep) + " best : " + bestScore.toString() + " time " + currentTime );
             }
 
-            if (calPeriod != maxTime && calPeriod % 10 == 0) {
-                maxTime = calPeriod;
-                if (maxTime >= maxRunningTime) {
+            // 10초마다 한 번씩 검사
+            if (currentTime != elapsedTime && currentTime % 10 == 0) {
+                elapsedTime = currentTime;
+
+                //30초 이후로 10초마다 score array size를 줄인다.
+                if (elapsedTime >= 30) {
+                    scoreArraySize = scoreArraySize/2;
+                }
+
+                // 최대 수행 시간 초과시 종료
+                if (elapsedTime >= maxRunningTime) {
                     break;
                 }
             }
 
-//            if ((calEndTime - bestScoreTime) / 1000 >= maxPermitIdleTime) {
-//                break;
-//            }
-
+            // 해 개선이 이루어지지 않으면 종료
+            if ((calEndTime - bestScoreTime) / 1000 >= maxPermitIdleTime) {
+                break;
+            }
             nstep++;
         } while (true);
 
