@@ -18,6 +18,7 @@ public class RandomList<T> implements Iterable<T>, Serializable {
     public RandomList() {
     }
 
+
     public RandomList(List<T> _planList) {
         this.ini(_planList);
     }

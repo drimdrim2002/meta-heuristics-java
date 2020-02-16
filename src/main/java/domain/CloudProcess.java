@@ -1,6 +1,9 @@
 package domain;
 
+import common.RandomList;
+
 import java.io.Serializable;
+import java.util.List;
 
 public class CloudProcess implements Serializable {
 
@@ -9,6 +12,13 @@ public class CloudProcess implements Serializable {
     private int requiredMemory; // in gigabyte RAM
     private int requiredNetworkBandwidth; // in gigabyte per hour
 
+//    public RandomList<CloudComputer> getAvailComputer() {
+//        return availComputer;
+//    }
+//    private RandomList<CloudComputer> availComputer;
+//    public void setAvailComputer(List<CloudComputer> computers) {
+//        this.availComputer = new RandomList<CloudComputer>(computers);
+//    }
 
     public CloudProcess() {
     }
@@ -40,7 +50,9 @@ public class CloudProcess implements Serializable {
         return requiredNetworkBandwidth;
     }
 
-    public int getId() {return this.id;}
+    public int getId() {
+        return this.id;
+    }
 
     @Override
     public String toString() {

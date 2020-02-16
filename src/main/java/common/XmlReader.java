@@ -70,8 +70,6 @@ public class XmlReader {
                     System.out.println("requiredMemory : " + eElement.getElementsByTagName("requiredMemory").item(0).getTextContent());
                     System.out.println("requiredNetworkBandwidth  : " + eElement.getElementsByTagName("requiredNetworkBandwidth").item(0).getTextContent());
 
-
-
                     int id =  Integer.parseInt(eElement.getElementsByTagName("id").item(0).getTextContent());
                     int cpuPower =  Integer.parseInt(eElement.getElementsByTagName("requiredCpuPower").item(0).getTextContent());
                     int memory =  Integer.parseInt(eElement.getElementsByTagName("requiredMemory").item(0).getTextContent());

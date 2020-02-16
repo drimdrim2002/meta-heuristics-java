@@ -111,7 +111,10 @@ public class ScoreCalculator {
             }
             int newProcessCount = oldProcessCount + 1;
             processCountMap.put(computer, newProcessCount);
+
+            computer.getAvailProcessList().add(process);
         }
+
     }
 
     private void retract(CloudProcess process) {
@@ -147,6 +150,8 @@ public class ScoreCalculator {
                 softScore += computer.getCost();
             }
             processCountMap.put(computer, newProcessCount);
+
+            computer.getAvailProcessList().remove(process);
         }
     }
 

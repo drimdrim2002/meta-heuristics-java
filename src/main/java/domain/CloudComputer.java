@@ -1,6 +1,9 @@
 package domain;
 
+import common.RandomList;
+
 import java.io.Serializable;
+import java.util.List;
 
 public class CloudComputer implements Serializable {
 
@@ -9,6 +12,16 @@ public class CloudComputer implements Serializable {
     private int memory; // in gigabyte RAM
     private int networkBandwidth; // in gigabyte per hour
     private int cost; // in euro per month
+
+    public RandomList<CloudProcess> getAvailProcessList() {
+        return availProcessList;
+    }
+
+    private RandomList<CloudProcess> availProcessList;
+
+    public void setAvailProcessList(List<CloudProcess> processList) {
+        availProcessList = new RandomList<CloudProcess>(processList);
+    }
 
     public CloudComputer() {
     }

@@ -61,8 +61,7 @@ public class LahcSolver extends Solver {
 
 
         Map<CloudProcess, CloudComputer> backupBestScoreAnswer = new HashMap<CloudProcess, CloudComputer>();
-        Random random =  new Random(1);
-
+        Random random = new Random(1);
 
 
         do {
@@ -70,6 +69,9 @@ public class LahcSolver extends Solver {
             // next Move의 score를 가져오기
             List<AbstractMove> moveList = MoveGenerator.getNextMove(scoreCalculator, random);
 
+//            for (AbstractMove move : moveList) {
+//                logger.info("move ==" +move.toString());
+//            }
 
             for (AbstractMove move : moveList) {
                 move.doMove(scoreCalculator);
@@ -83,13 +85,13 @@ public class LahcSolver extends Solver {
             }
 
 
-            ScoreLong prevSetpScore = scoreArray[nstep % scoreArraySize] ;
+            ScoreLong prevSetpScore = scoreArray[nstep % scoreArraySize];
 
 
             // 다음 move가 현재보다 좋거나, 이전 setp보다 좋으면 accept
             accept = (nextScore.compareTo(currScore) >= 0 || nextScore.compareTo(prevSetpScore) >= 0);
 
-            if(accept) {
+            if (accept) {
                 currScore.assign(nextScore);
                 //accept하여 move를 받아들임
                 for (AbstractMove move : moveList) {
@@ -109,11 +111,11 @@ public class LahcSolver extends Solver {
             int currentTime = (int) (calEndTime - calstartTime) / 1000;
 
 
-
             if (currScore.compareTo(bestScore) > 0) {
                 bestScore.assign(currScore);
 
                 //domove는 이미 되어있다고 본다.
+                backupBestScoreAnswer.clear();
                 for (CloudProcess cloudProcess : scoreCalculator.getCloudBalance().getProcessList()) {
                     backupBestScoreAnswer.put(cloudProcess, cloudProcess.getComputer());
                 }
@@ -121,9 +123,9 @@ public class LahcSolver extends Solver {
             }
 
             //1초에 한번씩 display
-            if(currentTime != displayedTime && currentTime % 1 == 0){
+            if (currentTime != displayedTime && currentTime % 1 == 0) {
                 displayedTime = currentTime;
-                logger.info(String.format("%11d", nstep) + " best : " + bestScore.toString() + " time " + currentTime );
+                logger.info(String.format("%11d", nstep) + " best : " + bestScore.toString() + " time " + currentTime);
             }
 
             // 10초마다 한 번씩 검사
@@ -131,9 +133,9 @@ public class LahcSolver extends Solver {
                 elapsedTime = currentTime;
 
                 //30초 이후로 10초마다 score array size를 줄인다.
-                if (elapsedTime >= 30) {
-                    scoreArraySize = scoreArraySize/2;
-                }
+//                if (elapsedTime >= 30) {
+//                    scoreArraySize = scoreArraySize/2;
+//                }
 
                 // 최대 수행 시간 초과시 종료
                 if (elapsedTime >= maxRunningTime) {
@@ -150,14 +152,12 @@ public class LahcSolver extends Solver {
 
 
         //final score 처리
-
-        logger.info("final score ==" + scoreCalculator.calculateScore());
-
         for (CloudProcess cloudProcess : scoreCalculator.getCloudBalance().getProcessList()) {
-            CloudComputer cloudComputer = backupBestScoreAnswer.get(cloudProcess);
-            cloudProcess.setComputer(cloudComputer);
+            CloudComputer bestAnswer = backupBestScoreAnswer.get(cloudProcess);
+            cloudProcess.setComputer(bestAnswer);
         }
-
+        scoreCalculator.resetWorkingSolution(scoreCalculator.getCloudBalance());
+        logger.info("final score ==" + scoreCalculator.calculateScore());
 
     }
 }
