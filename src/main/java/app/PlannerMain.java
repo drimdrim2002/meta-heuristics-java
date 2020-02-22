@@ -9,8 +9,6 @@ import score.ScoreCalculator;
 import score.ScoreLong;
 import solver.LahcSolver;
 
-import java.util.Random;
-
 public class PlannerMain {
 
     private final static Logger logger = LoggerFactory.getLogger(PlannerMain.class);
@@ -24,14 +22,15 @@ public class PlannerMain {
             return;
         }
 
-        ScoreCalculator scoreCalculator = new ScoreCalculator(cloudBalance);
+        // score calculator는 cloudbalance에 종속
+        ScoreCalculator scoreCalculator = new ScoreCalculator();
         scoreCalculator.resetWorkingSolution(cloudBalance);
 
         // Domain associate
         DomainAssociator.associate(cloudBalance);
 
         // initial planning
-        scoreCalculator.initialPlan();
+        scoreCalculator.initialPlan(cloudBalance);
         ScoreLong score = scoreCalculator.calculateScore();
         logger.info("initial score ==" + score.toString());
 
@@ -39,8 +38,8 @@ public class PlannerMain {
         cloudBalance.showPlans();
 
         // optimal planning
-        LahcSolver lahcSolver = new LahcSolver(scoreCalculator);
-        lahcSolver.optimalPlanning(scoreCalculator);
+        LahcSolver lahcSolver = new LahcSolver(cloudBalance, scoreCalculator);
+        lahcSolver.optimalPlanning();
 
     }
 }

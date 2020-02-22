@@ -31,27 +31,33 @@ import java.util.Objects;
 public class CloudComputerChangeMove  extends AbstractMove {
 
     private CloudProcess cloudProcess;
-    private CloudComputer fromCloudComputer;
     private CloudComputer toCloudComputer;
 
-    public CloudComputerChangeMove(CloudProcess cloudProcess,CloudComputer fromCloudComputer, CloudComputer toCloudComputer) {
+    public CloudComputerChangeMove(CloudProcess cloudProcess, CloudComputer toCloudComputer) {
         this.cloudProcess = cloudProcess;
-        this.fromCloudComputer = fromCloudComputer;
         this.toCloudComputer = toCloudComputer;
     }
 
+
+    @Override
+    public CloudComputerChangeMove doMove(ScoreCalculator scoreCalculator) {
+        CloudComputerChangeMove undoMove = createUndoMove(scoreCalculator);
+        doMoveOnGenuineVariables(scoreCalculator);
+        return undoMove;
+    }
+
+    @Override
     public boolean isMoveDoable(ScoreCalculator scoreCalculator) {
-        return !Objects.equals(fromCloudComputer, toCloudComputer);
+        return !Objects.equals(cloudProcess.getComputer(), toCloudComputer);
+    }
+    @Override
+    protected CloudComputerChangeMove createUndoMove(ScoreCalculator scoreCalculator) {
+        return new CloudComputerChangeMove(cloudProcess, cloudProcess.getComputer());
     }
 
-    public void undoMove(ScoreCalculator scoreCalculator) {
-        scoreCalculator.beforeVariableChanged(cloudProcess);
-        cloudProcess.setComputer(fromCloudComputer);
-        scoreCalculator.afterVariableChanged(cloudProcess);
-    }
 
-
-    public void doMove(ScoreCalculator scoreCalculator) {
+    @Override
+    protected void doMoveOnGenuineVariables(ScoreCalculator scoreCalculator) {
         scoreCalculator.beforeVariableChanged(cloudProcess);
         cloudProcess.setComputer(toCloudComputer);
         scoreCalculator.afterVariableChanged(cloudProcess);

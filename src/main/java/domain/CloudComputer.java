@@ -13,15 +13,6 @@ public class CloudComputer implements Serializable {
     private int networkBandwidth; // in gigabyte per hour
     private int cost; // in euro per month
 
-    public RandomList<CloudProcess> getAvailProcessList() {
-        return availProcessList;
-    }
-
-    private RandomList<CloudProcess> availProcessList;
-
-    public void setAvailProcessList(List<CloudProcess> processList) {
-        availProcessList = new RandomList<CloudProcess>(processList);
-    }
 
     public CloudComputer() {
     }

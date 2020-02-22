@@ -8,9 +8,7 @@ public class DomainAssociator {
         List<CloudComputer> computerList = cloudBalance.getComputerList();
         List<CloudProcess> processList = cloudBalance.getProcessList();
 
-        for (CloudComputer cloudComputer : computerList) {
-            cloudComputer.setAvailProcessList(processList);
-        }
+
 
     }
 }

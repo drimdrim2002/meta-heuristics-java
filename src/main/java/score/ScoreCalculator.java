@@ -3,26 +3,24 @@ package score;
 import domain.CloudBalance;
 import domain.CloudComputer;
 import domain.CloudProcess;
+import move.AbstractMove;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
 public class ScoreCalculator {
+
+    //
     private Map<CloudComputer, Integer> cpuPowerUsageMap;
     private Map<CloudComputer, Integer> memoryUsageMap;
     private Map<CloudComputer, Integer> networkBandwidthUsageMap;
     private Map<CloudComputer, Integer> processCountMap;
 
 
-    public CloudBalance getCloudBalance() {
-        return cloudBalance;
-    }
 
-    private CloudBalance cloudBalance;
 
-    public ScoreCalculator(CloudBalance cloudBalance) {
-        this.cloudBalance = cloudBalance;
+    public ScoreCalculator() {
     }
 
     private int hardScore;
@@ -49,7 +47,7 @@ public class ScoreCalculator {
     }
 
 
-    public void initialPlan() {
+    public void initialPlan(CloudBalance cloudBalance) {
 
         // 초기해를 구한다.
         for (CloudProcess cloudProcess : cloudBalance.getProcessList()) {
@@ -112,7 +110,6 @@ public class ScoreCalculator {
             int newProcessCount = oldProcessCount + 1;
             processCountMap.put(computer, newProcessCount);
 
-            computer.getAvailProcessList().add(process);
         }
 
     }
@@ -151,7 +148,6 @@ public class ScoreCalculator {
             }
             processCountMap.put(computer, newProcessCount);
 
-            computer.getAvailProcessList().remove(process);
         }
     }
 
@@ -165,6 +161,24 @@ public class ScoreCalculator {
 
     public void afterVariableChanged(CloudProcess cloudProcess) {
         insert(cloudProcess);
+    }
+
+
+    public void doAndProcessMove(AbstractMove move, TreeMap<ScoreLong, AbstractMove> moveScope) {
+
+        ScoreLong beforeScore = calculateScore();
+        AbstractMove undoMove = move.doMove(this);
+        ScoreLong afterScore = calculateScore();
+
+        moveScope.put(afterScore, move);
+        undoMove.doMove(this);
+
+        ScoreLong rollbackScore = calculateScore();
+
+        //TODO : 안전성 입증되면 삭제 필요
+        if (!beforeScore.equals(rollbackScore)) {
+            throw new UnsupportedOperationException();
+        }
     }
 
 

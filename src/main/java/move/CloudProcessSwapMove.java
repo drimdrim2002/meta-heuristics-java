@@ -36,22 +36,25 @@ public class CloudProcessSwapMove extends AbstractMove {
         this.rightCloudProcess = rightCloudProcess;
     }
 
+    @Override
     public boolean isMoveDoable(ScoreCalculator scoreCalculator) {
         return !Objects.equals(leftCloudProcess.getComputer(), rightCloudProcess.getComputer());
     }
 
-    public void undoMove(ScoreCalculator scoreDirector) {
-        CloudComputer oldRightCloudComputer = leftCloudProcess.getComputer();
-        CloudComputer oldLeftCloudComputer = rightCloudProcess.getComputer();
-        scoreDirector.beforeVariableChanged(leftCloudProcess);
-        leftCloudProcess.setComputer(oldLeftCloudComputer);
-        scoreDirector.afterVariableChanged(leftCloudProcess);
-        scoreDirector.beforeVariableChanged(rightCloudProcess);
-        rightCloudProcess.setComputer(oldRightCloudComputer);
-        scoreDirector.afterVariableChanged(rightCloudProcess);
+    @Override
+    public CloudProcessSwapMove doMove(ScoreCalculator scoreCalculator) {
+        CloudProcessSwapMove undoMove = createUndoMove(scoreCalculator);
+        doMoveOnGenuineVariables(scoreCalculator);
+        return undoMove;
     }
 
-    public void doMove(ScoreCalculator scoreDirector) {
+
+    @Override
+    protected CloudProcessSwapMove createUndoMove(ScoreCalculator scoreDirector) {
+        return new CloudProcessSwapMove(rightCloudProcess, leftCloudProcess);
+    }
+    @Override
+    protected void doMoveOnGenuineVariables(ScoreCalculator scoreDirector) {
         CloudComputer oldLeftCloudComputer = leftCloudProcess.getComputer();
         CloudComputer oldRightCloudComputer = rightCloudProcess.getComputer();
         scoreDirector.beforeVariableChanged(leftCloudProcess);
@@ -63,7 +66,7 @@ public class CloudProcessSwapMove extends AbstractMove {
     }
 
 
-
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;

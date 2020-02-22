@@ -1,44 +1,93 @@
 package solver;
 
 import common.EngineConfig;
+import common.RandomList;
+import domain.CloudBalance;
 import domain.CloudComputer;
 import domain.CloudProcess;
 import move.AbstractMove;
+import move.CloudComputerChangeMoveFactory;
+import move.CloudProcessSwapFactory;
 import move.MoveGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import score.ScoreCalculator;
 import score.ScoreLong;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class LahcSolver extends Solver {
 
 
     private final static Logger logger = LoggerFactory.getLogger(LahcSolver.class);
+    private final CloudBalance cloudBalance;
     private final ScoreCalculator scoreCalculator;
     private int scoreArraySize;
     private final ScoreLong[] scoreArray;
-    private final int foragarSize;
+    private final int foragerSize;
     private final int maxRunningTime;
     private final int maxPermitIdleTime;
 
 
-    public LahcSolver(ScoreCalculator scoreCalculator) {
+    public LahcSolver(CloudBalance cloudBalance, ScoreCalculator scoreCalculator) {
+        this.cloudBalance = cloudBalance;
         this.scoreCalculator = scoreCalculator;
         this.scoreArraySize = EngineConfig.SCORE_ARRAY_SIZE;
         this.scoreArray = new ScoreLong[scoreArraySize + 1];
-        this.foragarSize = EngineConfig.FORAGAR_SIZE;
         this.maxRunningTime = EngineConfig.MAX_RUNNING_TIME;
         this.maxPermitIdleTime = EngineConfig.MAX_PERMIT_IDLE_TIME;
+        this.foragerSize = EngineConfig.FORAGAR_SIZE;
     }
 
 
+    private AbstractMove getNextMove(RandomList<AbstractMove> randomMoveList,
+                                                           ScoreLong currScore, ScoreLong prevSetpScore) {
+        //매 턴마다 foraerMap 생성
+        TreeMap<ScoreLong, List<AbstractMove>> foragerMap = new TreeMap<ScoreLong, List<AbstractMove>>();
+        int acceptCount = 0;
+        boolean accept;
+
+        do {
+            AbstractMove randomPick = randomMoveList.randomPick(cloudBalance.randomSeed);
+            if (randomPick == null) {
+                break;
+            }
+
+            randomMoveList.remove(randomPick);
+
+            if (randomPick.isMoveDoable(scoreCalculator)) {
+                AbstractMove undoMove = randomPick.doMove(scoreCalculator); // random pick 된 move에 대해 수행
+                ScoreLong nextScore = scoreCalculator.calculateScore(); // 점수를 계산하고
+                undoMove.doMove(scoreCalculator); // 다시 원
+
+                // 다음 move가 현재보다 좋거나, 이전 setp보다 좋으면 accept
+                accept = (nextScore.compareTo(currScore) >= 0 || nextScore.compareTo(prevSetpScore) >= 0);
+                if (accept) {
+                    acceptCount++;
+                    if (!foragerMap.containsKey(nextScore)) {
+                        foragerMap.put(nextScore, new ArrayList<AbstractMove>());
+                    }
+                    foragerMap.get(nextScore).add(randomPick);
+                }
+
+                if (acceptCount == foragerSize) {
+                    break;
+                }
+            }
+            // 시간 종료 조건 추가
+        } while (true);
+
+        if (foragerMap.isEmpty()) {
+            return  null;
+        }
+
+        int highScoreSize = foragerMap.lastEntry().getValue().size();
+        int randomIndex = cloudBalance.randomSeed.nextInt(highScoreSize);
+        return foragerMap.lastEntry().getValue().get(randomIndex);
+    }
+
     @Override
-    public void optimalPlanning(ScoreCalculator scoreCalculator) {
+    public void optimalPlanning() {
 
         ScoreLong currScore = scoreCalculator.calculateScore();
         logger.info("ini score : " + currScore);
@@ -51,59 +100,44 @@ public class LahcSolver extends Solver {
         }
 
 
-        int nstep = 1;
-        boolean accept;
+        int nstep = 0; //
 
-        long calstartTime = System.currentTimeMillis();
-        int elapsedTime = 0;
-        int displayedTime = 0;
-        long bestScoreTime = calstartTime;
+        long calstartTime = System.currentTimeMillis(); // 시작 시간
+        int elapsedTime = 0; // 엔진 실행 이후 얼마나 경과되었는가?
+        int displayedTime = 0; //몇 초마다 보여줄 것인가?
+        long bestScoreTime = calstartTime; //best score 갱신 시간 기록
 
 
         Map<CloudProcess, CloudComputer> backupBestScoreAnswer = new HashMap<CloudProcess, CloudComputer>();
-        Random random = new Random(1);
 
+
+        List<AbstractMove> moveList = new ArrayList<AbstractMove>();
+        moveList.addAll(CloudComputerChangeMoveFactory.createMoveList(cloudBalance));
+        moveList.addAll(CloudProcessSwapFactory.createMoveList(cloudBalance));
+        RandomList<AbstractMove> randomMoveList = new RandomList<>(moveList);
 
         do {
+            nstep ++;
+
+            // 이 놈을 어디에 둘 것인가??
+            ScoreLong prevSetpScore = scoreArray[nstep % scoreArraySize];
 
             // next Move의 score를 가져오기
-            List<AbstractMove> moveList = MoveGenerator.getNextMove(scoreCalculator, random);
-
-//            for (AbstractMove move : moveList) {
-//                logger.info("move ==" +move.toString());
-//            }
-
-            for (AbstractMove move : moveList) {
-                move.doMove(scoreCalculator);
+            AbstractMove nexMove = getNextMove(randomMoveList, currScore, prevSetpScore);
+            if (nexMove == null) {
+                continue;
             }
+            randomMoveList.restoreAllCandi();
 
+//            logger.info("nsetp" +nstep);
+            nexMove.doMove(scoreCalculator); // 현재 move를 반영
 
             ScoreLong nextScore = scoreCalculator.calculateScore();
 
-            for (AbstractMove move : moveList) {
-                move.undoMove(scoreCalculator);
-            }
+            currScore.assign(nextScore);
 
-
-            ScoreLong prevSetpScore = scoreArray[nstep % scoreArraySize];
-
-
-            // 다음 move가 현재보다 좋거나, 이전 setp보다 좋으면 accept
-            accept = (nextScore.compareTo(currScore) >= 0 || nextScore.compareTo(prevSetpScore) >= 0);
-
-            if (accept) {
-                currScore.assign(nextScore);
-                //accept하여 move를 받아들임
-                for (AbstractMove move : moveList) {
-                    move.doMove(scoreCalculator);
-                }
-
-            }
-
-            if (accept && currScore.compareTo(prevSetpScore) >= 0) {
+            if (currScore.compareTo(prevSetpScore) >= 0) {
                 prevSetpScore.assign(currScore);
-
-
             }
 
 
@@ -115,10 +149,10 @@ public class LahcSolver extends Solver {
                 bestScore.assign(currScore);
 
                 //domove는 이미 되어있다고 본다.
-                backupBestScoreAnswer.clear();
-                for (CloudProcess cloudProcess : scoreCalculator.getCloudBalance().getProcessList()) {
-                    backupBestScoreAnswer.put(cloudProcess, cloudProcess.getComputer());
-                }
+//                backupBestScoreAnswer.clear();
+//                for (CloudProcess cloudProcess : cloudBalance.getProcessList()) {
+//                    backupBestScoreAnswer.put(cloudProcess, cloudProcess.getComputer());
+//                }
                 bestScoreTime = calEndTime;
             }
 
@@ -144,19 +178,18 @@ public class LahcSolver extends Solver {
             }
 
             // 해 개선이 이루어지지 않으면 종료
-            if ((calEndTime - bestScoreTime) / 1000 >= maxPermitIdleTime) {
-                break;
-            }
-            nstep++;
+//            if ((calEndTime - bestScoreTime) / 1000 >= maxPermitIdleTime) {
+//                break;
+//            }
         } while (true);
 
 
         //final score 처리
-        for (CloudProcess cloudProcess : scoreCalculator.getCloudBalance().getProcessList()) {
+        for (CloudProcess cloudProcess : cloudBalance.getProcessList()) {
             CloudComputer bestAnswer = backupBestScoreAnswer.get(cloudProcess);
             cloudProcess.setComputer(bestAnswer);
         }
-        scoreCalculator.resetWorkingSolution(scoreCalculator.getCloudBalance());
+        scoreCalculator.resetWorkingSolution(cloudBalance);
         logger.info("final score ==" + scoreCalculator.calculateScore());
 
     }

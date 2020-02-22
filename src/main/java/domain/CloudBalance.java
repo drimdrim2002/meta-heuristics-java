@@ -16,8 +16,20 @@ public class CloudBalance implements Serializable {
 
     private List<CloudComputer> computerList;
     private List<CloudProcess> processList;
+
+    public void setScoreCalculator(ScoreCalculator scoreCalculator) {
+        this.scoreCalculator = scoreCalculator;
+    }
+
+    public ScoreCalculator getScoreCalculator() {
+        return scoreCalculator;
+    }
+
+    public final static Random randomSeed = new Random(0);
+
     private ScoreCalculator scoreCalculator;
     private final static Logger logger = LoggerFactory.getLogger(CloudBalance.class);
+
 
 
     //멀티쓰레드 적용을 위해 설정
