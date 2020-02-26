@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CloudComputerChangeMoveFactory {
-    public static List<CloudComputerChangeMove> createMoveList(CloudBalance cloudBalance) {
-        List<CloudComputerChangeMove> moveList = new ArrayList<>();
+    public static List<AbstractMove> createMoveList(CloudBalance cloudBalance) {
+        List<AbstractMove> moveList = new ArrayList<>();
         List<CloudComputer> cloudComputerList = cloudBalance.getComputerList();
         for (CloudProcess cloudProcess : cloudBalance.getProcessList()) {
             for (CloudComputer cloudComputer : cloudComputerList) {

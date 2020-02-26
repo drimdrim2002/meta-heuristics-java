@@ -1,5 +1,6 @@
 package domain;
 
+import move.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import score.ScoreCalculator;
@@ -16,6 +17,23 @@ public class CloudBalance implements Serializable {
 
     private List<CloudComputer> computerList;
     private List<CloudProcess> processList;
+
+
+    private List<AbstractMove> changeMoveList;
+    public List<AbstractMove> getChangeMoveList() {
+        return changeMoveList;
+    }
+    public void setChangeMoveList(List<AbstractMove> changeMoveList) {
+        this.changeMoveList = changeMoveList;
+    }
+
+    private List<AbstractMove> swapMoveList;
+    public List<AbstractMove> getSwapMoveList() {
+        return swapMoveList;
+    }
+    public void setSwapMoveList(List<AbstractMove> swapMoveList) {
+        this.swapMoveList = swapMoveList;
+    }
 
     public void setScoreCalculator(ScoreCalculator scoreCalculator) {
         this.scoreCalculator = scoreCalculator;

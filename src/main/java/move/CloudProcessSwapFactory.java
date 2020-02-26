@@ -9,9 +9,9 @@ import java.util.ListIterator;
 
 public class CloudProcessSwapFactory {
 
-    public static List<CloudProcessSwapMove> createMoveList(CloudBalance cloudBalance) {
+    public static List<AbstractMove> createMoveList(CloudBalance cloudBalance) {
         List<CloudProcess> cloudProcessList = cloudBalance.getProcessList();
-        List<CloudProcessSwapMove> moveList = new ArrayList<>();
+        List<AbstractMove> moveList = new ArrayList<>();
 
         for (ListIterator<CloudProcess> leftIt = cloudProcessList.listIterator(); leftIt.hasNext();) {
             CloudProcess leftCloudProcess = leftIt.next();
