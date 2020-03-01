@@ -101,7 +101,9 @@ public class CloudBalance implements Serializable {
     public void showPlans() {
         logger.info("show Plans");
         for (CloudProcess process : processList) {
-            logger.info("   Process " + process.getId()  + "==> " + process.getComputer().getId());
+            if (process.getComputer() != null) {
+                logger.info("   Process " + process.getId()  + "==> " + process.getComputer().getId());
+            }
 
         }
     }

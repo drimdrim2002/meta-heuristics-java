@@ -9,8 +9,8 @@ public class EngineConfig {
     // RUN
     public final static int MAX_RUNNING_TIME = 60;
     public final static int MAX_PERMIT_IDLE_TIME = 10;
-    public final static int SCORE_ARRAY_SIZE = 200 ;
-    public final static int FORAGAR_SIZE = 8;
+    public final static int SCORE_ARRAY_SIZE = 400 ;
+    public final static int FORAGAR_SIZE = 1;
 
 
 }

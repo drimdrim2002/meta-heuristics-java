@@ -5,9 +5,7 @@ import domain.CloudComputer;
 import domain.CloudProcess;
 import move.AbstractMove;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class ScoreCalculator {
 
@@ -16,8 +14,6 @@ public class ScoreCalculator {
     private Map<CloudComputer, Integer> memoryUsageMap;
     private Map<CloudComputer, Integer> networkBandwidthUsageMap;
     private Map<CloudComputer, Integer> processCountMap;
-
-
 
 
     public ScoreCalculator() {
@@ -50,9 +46,31 @@ public class ScoreCalculator {
     public void initialPlan(CloudBalance cloudBalance) {
 
         // 초기해를 구한다.
+
+        Collections.sort(cloudBalance.getProcessList(), (left, right) -> {
+            int leftCputPower = left.getRequiredCpuPower();
+            int leftNetworkBandWidth = left.getRequiredNetworkBandwidth();
+            int leftMemory = left.getRequiredMemory();
+
+            int leftTotal = leftCputPower + leftNetworkBandWidth + leftMemory;
+
+            int rightCputPower = right.getRequiredCpuPower();
+            int rightNetworkdBandwidth = right.getRequiredNetworkBandwidth();
+            int rightMemory = right.getRequiredMemory();
+
+            int rightTotal = rightCputPower + rightNetworkdBandwidth + rightMemory;
+
+            if (leftTotal == rightTotal) {
+                return left.getId() > right.getId() ? 1 : -1;
+            }
+
+            return leftTotal > rightTotal ? -1 : 1;
+
+
+        });
         for (CloudProcess cloudProcess : cloudBalance.getProcessList()) {
 
-            TreeMap<ScoreLong, CloudComputer> scoreRank = new TreeMap<ScoreLong, CloudComputer>();
+            TreeMap<ScoreLong, List<CloudComputer>> scoreRank = new TreeMap<ScoreLong, List<CloudComputer>>();
             for (CloudComputer cloudComputer : cloudBalance.getComputerList()) {
                 cloudProcess.setComputer(cloudComputer);
                 afterVariableChanged(cloudProcess);
@@ -60,17 +78,26 @@ public class ScoreCalculator {
                 beforeVariableChanged(cloudProcess);
 
                 if (afterScore.getHardScore() >= 0) {
-                    scoreRank.put(afterScore, cloudComputer);
+
+                    if (!scoreRank.containsKey(afterScore)) {
+                        scoreRank.put(afterScore, new ArrayList<CloudComputer>());
+                    }
+                    scoreRank.get(afterScore).add(cloudComputer);
                 }
                 cloudProcess.setComputer(null);
             }
 
             if (!scoreRank.isEmpty()) {
-                CloudComputer cloudComputer = scoreRank.lastEntry().getValue();
-                cloudProcess.setComputer(cloudComputer);
+                List<CloudComputer> cloudComputerList = scoreRank.lastEntry().getValue();
+                int randomIndex = cloudBalance.randomSeed.nextInt(cloudComputerList.size());
+                cloudProcess.setComputer(cloudComputerList.get(randomIndex));
                 afterVariableChanged(cloudProcess);
             }
         }
+
+
+
+
 
     }
 
