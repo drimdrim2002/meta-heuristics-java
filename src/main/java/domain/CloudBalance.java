@@ -43,8 +43,8 @@ public class CloudBalance implements Serializable {
         return scoreCalculator;
     }
 
-    public final static Random randomSeed = new Random(0);
-
+//    public final static Random randomSeed = new Random(0);
+    public  Random randomSeed ;
     private ScoreCalculator scoreCalculator;
     private final static Logger logger = LoggerFactory.getLogger(CloudBalance.class);
 

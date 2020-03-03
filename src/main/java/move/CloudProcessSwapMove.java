@@ -16,6 +16,7 @@
 
 package move;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
@@ -26,7 +27,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import score.ScoreCalculator;
 
-public class CloudProcessSwapMove extends AbstractMove {
+public class CloudProcessSwapMove extends AbstractMove implements Serializable {
 
     private CloudProcess leftCloudProcess;
     private CloudProcess rightCloudProcess;

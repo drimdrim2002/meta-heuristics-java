@@ -1,6 +1,7 @@
 package solver;
 
 import common.EngineConfig;
+import common.Util;
 import domain.CloudBalance;
 import domain.CloudComputer;
 import domain.CloudProcess;
@@ -11,6 +12,10 @@ import score.ScoreCalculator;
 import score.ScoreLong;
 
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class LahcSolver extends Solver {
 
@@ -46,7 +51,7 @@ public class LahcSolver extends Solver {
         do {
 
 
-            AbstractMove randomPick = MoveGenerator.getNextMove( cloudBalance, tried, scoreCalculator);
+            AbstractMove randomPick = MoveGenerator.getNextMove(cloudBalance, tried, scoreCalculator);
             if (randomPick == null) {
                 break;
             }
@@ -70,7 +75,7 @@ public class LahcSolver extends Solver {
                 break;
             }
 
-            if (tried.size() >= 1000){
+            if (tried.size() >= 1000) {
                 break;
             }
 
@@ -82,7 +87,7 @@ public class LahcSolver extends Solver {
         }
 
 
-        if (foragerMap.keySet().size() >1) {
+        if (foragerMap.keySet().size() > 1) {
             int t = 1;
             t = 2;
         }
@@ -91,6 +96,22 @@ public class LahcSolver extends Solver {
         int randomIndex = cloudBalance.randomSeed.nextInt(highScoreSize);
         return foragerMap.lastEntry().getValue().get(randomIndex);
     }
+
+    private List<CloudBalance> deepCloningSolution() {
+        List<CloudBalance> solutions = new ArrayList<>();
+        solutions.add(cloudBalance);
+        for (int i = 0; i < EngineConfig.THREAD_SIZE; i++) {
+            try {
+                solutions.add((CloudBalance) Util.deepCopy(cloudBalance));
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new UnsupportedOperationException(e);
+
+            }
+        }
+        return solutions;
+    }
+
 
     @Override
     public void optimalPlanning() {
@@ -115,6 +136,14 @@ public class LahcSolver extends Solver {
         long bestScoreTime = calstartTime; //best score 갱신 시간 기록
 
         logger.info("Solving start");
+
+        ExecutorService threadPool = Executors.newFixedThreadPool(EngineConfig.THREAD_SIZE);
+        List<CloudBalance> solutions = deepCloningSolution();
+
+        for (int i = 0; i < solutions.size(); i++) {
+            CloudBalance cloudBalance = solutions.get(i);
+            cloudBalance.randomSeed = new Random(i);
+        }
         do {
 
 //            logger.info("nstep" + nstep);
@@ -128,7 +157,6 @@ public class LahcSolver extends Solver {
             ScoreLong prevSetpScore = scoreArray[nstep % scoreArraySize];
 
             // next Move의 score를 가져오기
-
 
 
 //            int moveType = cloudBalance.randomSeed.nextInt(2);
@@ -202,5 +230,37 @@ public class LahcSolver extends Solver {
         scoreCalculator.resetWorkingSolution(cloudBalance);
         logger.info("final score ==" + scoreCalculator.calculateScore());
 
+    }
+
+    private PriorityMove getNextMoveWithTrhead(ExecutorService threadPool, List<Callable<PriorityMove>> callables) {
+        PriorityQueue<PriorityMove> priorityMoves = new PriorityQueue<>();
+        try {
+            List<Future<PriorityMove>> futures;
+            futures = threadPool.invokeAll(callables);
+
+            for (Future<PriorityMove> future : futures) {
+                priorityMoves.add(future.get());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return priorityMoves.peek();
+    }
+
+    private class MoveGeneratorWithThread implements Callable<PriorityMove> {
+        public final CloudBalance cloudBalance;
+
+        public MoveGeneratorWithThread(CloudBalance cloudBalance) {
+            super();
+            this.cloudBalance = cloudBalance;
+        }
+
+        @Override
+        public PriorityMove call() throws Exception {
+            //TODO : 여기서부터 작업해야
+//            AbstractMove abstractMove = cloudBalance.함
+            return null;
+        }
     }
 }

@@ -16,19 +16,17 @@
 
 package move;
 
-import domain.CloudBalance;
 import domain.CloudComputer;
 import domain.CloudProcess;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import score.ScoreCalculator;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.io.Serializable;
 import java.util.Objects;
 
 
-public class CloudComputerChangeMove  extends AbstractMove {
+public class CloudComputerChangeMove  extends AbstractMove implements Serializable {
 
     private CloudProcess cloudProcess;
     private CloudComputer toCloudComputer;

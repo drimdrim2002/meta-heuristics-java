@@ -5,9 +5,10 @@ import domain.CloudComputer;
 import domain.CloudProcess;
 import move.AbstractMove;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class ScoreCalculator {
+public class ScoreCalculator implements Serializable {
 
     //
     private Map<CloudComputer, Integer> cpuPowerUsageMap;

@@ -9,7 +9,7 @@ import java.util.ListIterator;
 
 public class CloudProcessSwapFactory {
 
-    public static List<AbstractMove> createMoveList(CloudBalance cloudBalance) {
+    public static List<AbstractMove> createMoveList(CloudBalance cloudBalance)  {
         List<CloudProcess> cloudProcessList = cloudBalance.getProcessList();
         List<AbstractMove> moveList = new ArrayList<>();
 

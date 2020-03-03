@@ -2,7 +2,9 @@ package move;
 
 import score.ScoreCalculator;
 
-public abstract class AbstractMove {
+import java.io.Serializable;
+
+public abstract class AbstractMove implements Serializable {
     public abstract boolean isMoveDoable(ScoreCalculator scoreCalculator);
     public abstract AbstractMove doMove(ScoreCalculator scoreCalculator);
     protected abstract void doMoveOnGenuineVariables(ScoreCalculator scoreDirector);
